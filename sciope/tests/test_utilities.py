@@ -27,8 +27,8 @@ import pytest
 
 def test_distance_functions():
     vec_length = 5
-    v1 = np.random.rand(1, vec_length)
-    v2 = np.random.rand(1, vec_length)
+    v1 = np.random.rand(vec_length)
+    v2 = np.random.rand(vec_length)
 
     # calculate Euclidean distance using sciope and numpy
     euc_func = euclidean.EuclideanDistance()
@@ -105,8 +105,8 @@ def test_uniform_prior():
 
 def test_distance_functions_with_logging():
     vec_length = 5
-    v1 = np.random.rand(1, vec_length)
-    v2 = np.random.rand(1, vec_length)
+    v1 = np.random.rand(vec_length)
+    v2 = np.random.rand(vec_length)
 
     # calculate Euclidean distance using sciope and numpy
     euc_func = euclidean.EuclideanDistance(use_logger=True)
@@ -186,24 +186,24 @@ def test_summarystats_auto_tsfresh():
     # corrcoef = False, will compute mean
     at = auto_tsfresh.SummariesTSFRESH()
     stats = at.compute(samples)
-    assert stats.shape == (1, 14), "summarystats auto_tsfresh test failed, dimension mismatch"
+    assert stats.shape == (1, 18), "summarystats auto_tsfresh test failed, dimension mismatch"
 
     # corrcoef = True
     at.corrcoef = True
     stats = at.compute(samples)
-    assert stats.shape == (1, 15), "summarystats auto_tsfresh test failed, dimension mismatch"
+    assert stats.shape == (1, 19), "summarystats auto_tsfresh test failed, dimension mismatch"
 
     samples = np.random.randn(2, 3, 10)
     # corrcoef = True
     at.corrcoef = True
     stats = at.compute(samples)
-    assert stats.shape == (1, 21 + 3), "summarystats auto_tsfresh test failed, dimension mismatch"
+    assert stats.shape == (1, 30), "summarystats auto_tsfresh test failed, dimension mismatch"
 
     samples = np.random.randn(1, 1, 10)
     # corrcoef = False, will compute mean
     at = auto_tsfresh.SummariesTSFRESH()
     stats = at.compute(samples)
-    assert stats.shape == (1, 7), "summarystats auto_tsfresh test failed, dimension mismatch"
+    assert stats.shape == (1, 9), "summarystats auto_tsfresh test failed, dimension mismatch"
 
     # corrcoef = True, should raise AssertionError
     at.corrcoef = True

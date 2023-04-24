@@ -461,4 +461,6 @@ class SMCABC(InferenceBase):
                 print('No saved runs found')
                 abc_history = run_from_start(self)
                 return abc_history
+        else:
+            print("Invalid Round Number")
 

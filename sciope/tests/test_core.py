@@ -49,33 +49,37 @@ class ToggleSwitch(gillespy2.Model):
         self.add_reaction([cu,cv,du,dv])
         self.timespan(np.linspace(0,50,101))
 
+
+
 toggle_model = ToggleSwitch()
+solver = NumPySSASolver
+parameter_names = ['alpha1', 'alpha2', 'beta', 'gamma', 'mu']
 
 # Define simulator function
 
 
-def set_model_parameters(params, model):
-    """ params - array, needs to have the same order as
-        model.listOfParameters """
-    for e, (pname, p) in enumerate(model.listOfParameters.items()):
-        model.get_parameter(pname).set_expression(params[e])
-    return model
 
 # Here we use gillespy2 numpy solver, so performance will
 # be quite slow for this model
 
 
-def simulator(params, model):
+def simulator(params, model, transform=True):
+    params = params.ravel()
 
-    model_update = set_model_parameters(params, model)
     num_trajectories = 1  # TODO: howto handle ensembles
+    res = model.run(
+        solver=solver,
+        variables={parameter_names[i]: params[i] for i in range(len(parameter_names))})
 
-    res = model_update.run(solver=NumPySSASolver, show_labels=False,
-                           number_of_trajectories=num_trajectories)
-    tot_res = np.asarray([x.T for x in res]) # reshape to (N, S, T)  
-    tot_res = tot_res[:,1:, :] # should not contain timepoints
-    
-    return tot_res
+    if transform:
+
+        U_ = res['U']
+        V_ = res['V']
+
+        return np.vstack([U_, V_])[np.newaxis, :, :]
+
+    else:
+        return res
 
 
 def simulator2(x):
@@ -269,7 +273,7 @@ def test_param_sim_summ():
 
     assert params.shape == (5, 2, 5), "Core test failed, dimensions mismatch"
     assert sim.shape == (5, 2, 1, 2, 101), "Core test failed, dimensions mismatch"
-    assert summaries.shape == (5, 2, 1, 16), "Core test failed, dimensions mismatch"
+    assert summaries.shape == (5, 2, 1, 20), "Core test failed, dimensions mismatch"
 
 
     fixed_data = np.asarray([simulator2(bound) for p in range(10)])
@@ -280,7 +284,7 @@ def test_param_sim_summ():
     
     m, = dask.compute(fixed_mean)
     m = np.asarray(m)
-    assert  m.shape == (1, 16), "Core test failed, dimensions mismatch"
+    assert  m.shape == (1, 20), "Core test failed, dimensions mismatch"
 
     dist_class = ns.NaiveSquaredDistance()
 
@@ -293,5 +297,5 @@ def test_param_sim_summ():
     dist_res, = dask.compute(dist)
     dist_res = np.asarray(dist_res)
 
-    assert dist_res.shape == (5, 2, 1, 16), "Core test failed, dimension mismatch"
+    assert dist_res.shape == (5, 2, 1, 20), "Core test failed, dimension mismatch"
 

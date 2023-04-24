@@ -62,8 +62,8 @@ class ToggleSwitch(gillespy2.Model):
 
 
 toggle_model = ToggleSwitch()
-
-
+parameter_names = ['alpha1', 'alpha2', 'beta', 'gamma', 'mu']
+solver = NumPySSASolver
 # Define simulator function
 
 def set_model_parameters(params, model):
@@ -77,16 +77,23 @@ def set_model_parameters(params, model):
 # Here we use gillespy2 numpy solver, so performance will
 # be quite slow for this model
 
-def simulator(params, model):
-    model_update = set_model_parameters(params, model)
+def simulator(params, model, transform=True):
+    params = params.ravel()
+
     num_trajectories = 1  # TODO: howto handle ensembles
+    res = model.run(
+        solver=solver,
+        variables={parameter_names[i]: params[i] for i in range(len(parameter_names))})
 
-    res = model_update.run(solver=NumPySSASolver, show_labels=False,
-                           number_of_trajectories=num_trajectories)
-    tot_res = np.asarray([x.T for x in res])  # reshape to (N, S, T)
-    tot_res = tot_res[:, 1:, :]  # should not contain timepoints
+    if transform:
 
-    return tot_res
+        U_ = res['U']
+        V_ = res['V']
+
+        return np.vstack([U_, V_])[np.newaxis, :, :]
+
+    else:
+        return res
 
 
 def simulator2(x):
@@ -113,6 +120,9 @@ default_fc_params = {'mean': None,
                          [{'f_agg': 'mean', 'maxlag': 5},
                           {'f_agg': 'median', 'maxlag': 5},
                           {'f_agg': 'var', 'maxlag': 5}]}
+
+
+
 
 summaries = auto_tsfresh.SummariesTSFRESH(features=default_fc_params)
 

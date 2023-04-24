@@ -58,8 +58,11 @@ class SVRModel(ModelBase):
         vector
             pseudo-optimal parameters
         """
-        cs = [0.001, 0.01, 0.1, 1, 10]
-        gammas = [0.001, 0.01, 0.1, 1]
+        # cs = [0.001, 0.01, 0.1, 1, 10]
+        # gammas = [0.001, 0.01, 0.1, 1]
+
+        cs = [0.001, 0.01]
+        gammas = [0.001]
         param_grid = {'C': cs, 'gamma': gammas}
         grid_search = GridSearchCV(SVR(kernel='rbf'), param_grid, cv=nfolds)
         grid_search.fit(x, y)
@@ -81,7 +84,7 @@ class SVRModel(ModelBase):
         self.scale_training_data(inputs, targets)
 
         # Tune parameters using 5-fold CV and grid-search
-        params = self.tune_parameters(self.x, self.y, 5)
+        params = self.tune_parameters(self.x, self.y, 2)
 
         # Train the model
         self.model = SVR(C=params['C'], gamma=params['gamma'])

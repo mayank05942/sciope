@@ -17,6 +17,7 @@ Feature Extraction
 # Import
 from tsfresh.feature_extraction import feature_calculators
 import numpy as np
+import pandas as pd
 
 
 # Work in progress, no test case coverage for now
@@ -30,7 +31,7 @@ def generate_tsfresh_features(data, features):  # pragma: no cover
         time series collections of shape N x T, where T is number of time points
     features : dict, optional
         dict containing tsfresh features
-        for exempel:  features = {'variance': None,
+        for example:  features = {'variance': None,
                                                 'absolute_sum_of_changes': None,
                                                 'agg_autocorrelation': [{'f_agg': 'mean'},
                                                                         {'f_agg': 'var'}]}
@@ -43,12 +44,23 @@ def generate_tsfresh_features(data, features):  # pragma: no cover
     ndarray
         shape N x (Nr of total features)
     """
+    if not isinstance(data, np.ndarray):
+        data = np.asarray(data)
+
+
+    data = [[pd.Series(data[i, j, :], index=pd.date_range(start='2000-01-01', periods=data.shape[2], freq='D'))
+          for j in range(data.shape[1])] for i in range(data.shape[0])]
+
     for key in features.keys():
         assert hasattr(feature_calculators, key), "%s does not exist as a feature supported by tsfresh" % key
 
     def _f(x):
         for function_name, parameter_list in features.items():
             func = getattr(feature_calculators, function_name)
+
+            #x = [[pd.Series(x[i, j, :], index=pd.date_range(start='2000-01-01', periods=x.shape[2], freq='D'))
+            #      for j in range(x.shape[1])] for i in range(x.shape[0])]
+
 
             if func.fctype == "combiner":
                 res = func(x, param=parameter_list)  ## returns a list of tuples with string and value

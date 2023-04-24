@@ -16,7 +16,8 @@ Test suite for ML models
 """
 from sklearn.datasets import load_iris
 from sklearn.datasets import fetch_california_housing  # Use California housing dataset instead
-from sciope.models import label_propagation
+# from sciope.models import label_propagation
+from sklearn.semi_supervised import LabelPropagation
 from sciope.models import gp_regressor
 from sciope.models import ann_regressor
 from sciope.models import svm_regressor
@@ -63,8 +64,9 @@ def iris_data():
 
 
 def test_lp_model(iris_data):
-    model = label_propagation.LPModel()
-    model.train(iris_data.data, iris_data.new_target)
+    model = LabelPropagation()
+    #model = label_propagation.LPModel()
+    model.fit(iris_data.data, iris_data.new_target)
     print(model.gamma)
 
 
